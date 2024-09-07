@@ -1,0 +1,15 @@
+{
+  "name": "snaprove",
+  "version": "1.0.0",
+  "description": "Snaprove: Streamline content approvals with instant feedback, version control, and seamless collaboration between clients and agencies",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^32.0.2"
+  }
+}
