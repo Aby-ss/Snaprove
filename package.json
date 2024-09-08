@@ -2,8 +2,9 @@
   "name": "snaprove",
   "version": "1.0.0",
   "description": "Snaprove: Streamline content approvals with instant feedback, version control, and seamless collaboration between clients and agencies",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
+    "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
