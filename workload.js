@@ -1,72 +1,58 @@
-// Load the Google APIs client library
+// Import the googleapis library
 const { google } = require('googleapis');
 
-// Set up OAuth2 client with your credentials
-const CLIENT_ID = 'YOUR_CLIENT_ID';
-const CLIENT_SECRET = 'YOUR_CLIENT_SECRET';
-const REDIRECT_URI = 'YOUR_REDIRECT_URI';
-const REFRESH_TOKEN = 'YOUR_REFRESH_TOKEN';
+// Set up Google authentication with the necessary scopes for Google Docs
+const auth = new google.auth.GoogleAuth({
+    keyFile: './google.json', // Path to your JSON key file
+    scopes: ['https://www.googleapis.com/auth/documents'] // Scope for Google Docs
+});
 
-// Initialize the OAuth2 client
-const oAuth2Client = new google.auth.OAuth2(
-  CLIENT_ID,
-  CLIENT_SECRET,
-  REDIRECT_URI
-);
+// Function to write to a Google Docs document
+async function writeGoogleDocs(documentId, requests) {
+    try {
+        const docs = google.docs({ version: 'v1', auth }); // Create a Google Docs API client
 
-// Set the refresh token for the OAuth2 client
-oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
-
-// Initialize the Google Drive API
-const drive = google.drive({ version: 'v3', auth: oAuth2Client });
-
-// Function to list and download Google Docs files
-async function listAndDownloadGoogleDocs() {
-  try {
-    // List files in Google Drive
-    const res = await drive.files.list({
-      q: "mimeType='application/vnd.google-apps.document'",
-      fields: 'files(id, name)',
-    });
-
-    const files = res.data.files;
-    if (files.length) {
-      console.log('Files:');
-      files.forEach((file) => {
-        console.log(`${file.name} (${file.id})`);
-        // Download the file as a PDF
-        downloadFile(file.id, file.name);
-      });
-    } else {
-      console.log('No files found.');
+        // Send a batchUpdate request to modify the document
+        const writer = await docs.documents.batchUpdate({
+            documentId, // ID of the document to update
+            requestBody: {
+                requests // Array of requests detailing the changes to be made
+            }
+        });
+        return writer; // Return the response from the Google Docs API
+    } catch (error) {
+        console.error('error', error); // Log any errors that occur
     }
-  } catch (error) {
-    console.error('Error listing files:', error);
-  }
 }
 
-// Function to download a file from Google Drive
-async function downloadFile(fileId, fileName) {
-  try {
-    const res = await drive.files.export(
-      { fileId: fileId, mimeType: 'application/pdf' },
-      { responseType: 'stream' }
-    );
+// Function to read from a Google Docs document
+async function readGoogleDocs(documentId) {
+    try {
+        const docs = google.docs({ version: 'v1', auth }); // Create a Google Docs API client
 
-    // Save the file
-    const dest = require('fs').createWriteStream(`./${fileName}.pdf`);
-    res.data
-      .on('end', () => {
-        console.log(`Downloaded ${fileName}.pdf`);
-      })
-      .on('error', (err) => {
-        console.error('Error downloading file:', err);
-      })
-      .pipe(dest);
-  } catch (error) {
-    console.error('Error downloading file:', error);
-  }
+        // Retrieve the document content
+        const response = await docs.documents.get({ documentId }); // ID of the document to read
+        return response.data // Return the document data
+    } catch (error) {
+        console.error('error', error); // Log any errors that occur
+    }
 }
 
-// Run the script
-listAndDownloadGoogleDocs();
+// Self-invoking async function to execute the read and write operations
+(async () => {
+    // Example of writing to a document
+    const writer = await writeGoogleDocs('14b1bQ6YcgZYgWGFWW3w936u1raKrQ4y-73hKVDZ9Vos', [{
+        insertText: {
+            location: {
+                index: 1 // Specify the index to insert text
+            },
+            text: "Hello CodingWithAdo Fans!\n" // Text to be inserted
+        }
+    }]);
+    console.log(writer); // Log the response from the write operation
+
+    // Example of reading from a document
+    const data = await readGoogleDocs('14b1bQ6YcgZYgWGFWW3w936u1raKrQ4y-73hKVDZ9Vos');
+    // Extract and log the text content from the document
+    console.log(data.body.content.map(d => d.paragraph?.elements[0]['textRun']));
+})()
