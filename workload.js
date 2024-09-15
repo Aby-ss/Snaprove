@@ -3,7 +3,7 @@ const { google } = require('googleapis');
 
 // Set up Google authentication with the necessary scopes for Google Docs
 const auth = new google.auth.GoogleAuth({
-    keyFile: './google.json', // Path to your JSON key file
+    keyFile: '/Users/raoabdul/Documents/Development/google.json', // Path to your JSON key file
     scopes: ['https://www.googleapis.com/auth/documents'] // Scope for Google Docs
 });
 
