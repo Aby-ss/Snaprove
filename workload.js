@@ -41,18 +41,18 @@ async function readGoogleDocs(documentId) {
 // Self-invoking async function to execute the read and write operations
 (async () => {
     // Example of writing to a document
-    const writer = await writeGoogleDocs('14b1bQ6YcgZYgWGFWW3w936u1raKrQ4y-73hKVDZ9Vos', [{
+    const writer = await writeGoogleDocs('11SbzfM5FgyJeoBOrBT35rMZNfQQLsiY5PkPB39aYIuw', [{
         insertText: {
             location: {
                 index: 1 // Specify the index to insert text
             },
-            text: "Hello CodingWithAdo Fans!\n" // Text to be inserted
+            text: "Hello World\n" // Text to be inserted
         }
     }]);
     console.log(writer); // Log the response from the write operation
 
     // Example of reading from a document
-    const data = await readGoogleDocs('14b1bQ6YcgZYgWGFWW3w936u1raKrQ4y-73hKVDZ9Vos');
+    const data = await readGoogleDocs('11SbzfM5FgyJeoBOrBT35rMZNfQQLsiY5PkPB39aYIuw');
     // Extract and log the text content from the document
     console.log(data.body.content.map(d => d.paragraph?.elements[0]['textRun']));
 })()

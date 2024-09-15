@@ -12,5 +12,8 @@
   "license": "ISC",
   "devDependencies": {
     "electron": "^32.0.2"
+  },
+  "dependencies": {
+    "googleapis": "^144.0.0"
   }
 }
