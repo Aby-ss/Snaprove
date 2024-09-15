@@ -60,7 +60,6 @@ function extractTextFromDoc(docData) {
     const metadata = await getDocumentMetadata(documentId);
     const lastModifiedDate = metadata.modifiedTime;
 
-    // Box width (customize this value based on your preference)
     const boxWidth = 75;
 
     // Center the title, last modified date, and content
