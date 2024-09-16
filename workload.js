@@ -67,7 +67,6 @@ function extractTextFromDoc(docData) {
     const dateText = centerText(`Last Modified Date: ${new Date(lastModifiedDate).toLocaleString()}`, boxWidth);
     const contentText = documentContent.split('\n').map(line => centerText(line, boxWidth)).join('\n');
 
-    // Styled output using boxen and chalk
     const output = `
 ${chalk.blue.bold(titleText)}
 ${chalk.blue.bold(dateText)}
