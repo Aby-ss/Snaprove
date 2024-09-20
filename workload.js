@@ -18,6 +18,7 @@ const auth = new google.auth.GoogleAuth({
     ]
 });
 
+// Function to read from a Google Docs document
 async function readGoogleDocs(documentId) {
     try {
         const docs = google.docs({ version: 'v1', auth });
@@ -28,6 +29,7 @@ async function readGoogleDocs(documentId) {
     }
 }
 
+// Function to get document metadata (title, last modified date)
 async function getDocumentMetadata(documentId) {
     try {
         const drive = google.drive({ version: 'v3', auth });
@@ -41,6 +43,7 @@ async function getDocumentMetadata(documentId) {
     }
 }
 
+// Function to extract text from the document
 function extractTextFromDoc(docData) {
     return docData.body.content
         .filter(d => d.paragraph?.elements[0]?.textRun)
@@ -48,7 +51,82 @@ function extractTextFromDoc(docData) {
         .join('\n');
 }
 
+async function checkFolder(folderName) {
+    try {
+        const drive = google.drive({ version: 'v3', auth });
+        const response = await drive.files.list({
+            'q': `mimeType = 'application/vnd.google-apps.folder' and name = '${folderName}' and trashed = false`,
+            fields: 'files(id, name)',
+        });
+        const folders = response.data.files;
+        if (folders.length > 0) {
+            console.log(`Folder "${folderName}" found with ID: ${folders[0].id}`);
+            return folders[0].id;
+        } else {
+            console.log(`Folder "${folderName}" not available.`);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error finding folder:', error);
+    }
+}
+
+async function listAllFolders() {
+    try {
+        const drive = google.drive({ version: 'v3', auth });
+        const response = await drive.files.list({
+            'q': `mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+            fields: 'files(id, name)',
+        });
+        const folders = response.data.files;
+        if (folders.length > 0) {
+            console.log('Folders in your Google Drive:');
+            folders.forEach(folder => {
+                console.log(`- ${folder.name} (ID: ${folder.id})`);
+            });
+        } else {
+            console.log('No folders found.');
+        }
+    } catch (error) {
+        console.error('Error fetching folders:', error);
+    }
+}
+
+
+// Self-invoking async function to execute read, write, and file listing operations
 (async () => {
+    const folderName = 'AS Level';
+
+    // Check if the folder exists and get the folder ID
+    const folderId = await checkFolder(folderName);
+    
+    if (folderId) {
+        // Get the list of files in the folder
+        const filesList = await getFilesList(folderId);
+        
+        // Display the file names and last modified times in a box
+        const fileDetails = filesList.map(file => 
+            centerText(`File: ${file.name} (Last Modified: ${new Date(file.modifiedTime).toLocaleString()})`, 75)
+        ).join('\n');
+
+        const output = `
+${chalk.blue.bold(centerText(`Files in "${folderName}" Folder:`, 75))}
+
+${fileDetails}
+`;
+
+        const styledOutput = boxen(output, {
+            padding: 1,
+            margin: 1,
+            borderColor: 'blue',
+            borderStyle: 'bold',
+            textAlignment: 'left',
+            width: 75
+        });
+
+        console.log(styledOutput);
+    }
+
     const documentId = '11SbzfM5FgyJeoBOrBT35rMZNfQQLsiY5PkPB39aYIuw';
 
     // Get document content (title + body content)
