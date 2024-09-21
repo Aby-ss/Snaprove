@@ -18,39 +18,21 @@ const auth = new google.auth.GoogleAuth({
     ]
 });
 
-// Function to read from a Google Docs document
-async function readGoogleDocs(documentId) {
-    try {
-        const docs = google.docs({ version: 'v1', auth });
-        const response = await docs.documents.get({ documentId });
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching document content:', error);
-    }
-}
-
-// Function to get document metadata (title, last modified date)
-async function getDocumentMetadata(documentId) {
+// Function to get files list by folder ID
+async function getFilesList(folderId) {
     try {
         const drive = google.drive({ version: 'v3', auth });
-        const file = await drive.files.get({
-            fileId: documentId,
-            fields: 'name, modifiedTime'
+        const response = await drive.files.list({
+            'q': `'${folderId}' in parents and trashed = false`,
+            fields: 'files(id, name, modifiedTime)'
         });
-        return file.data;
+        return response.data.files;
     } catch (error) {
-        console.error('Error fetching document metadata:', error);
+        console.error('Error fetching files list:', error);
     }
 }
 
-// Function to extract text from the document
-function extractTextFromDoc(docData) {
-    return docData.body.content
-        .filter(d => d.paragraph?.elements[0]?.textRun)
-        .map(d => d.paragraph.elements.map(el => el.textRun.content).join(''))
-        .join('\n');
-}
-
+// Function to check for a specific folder by name
 async function checkFolder(folderName) {
     try {
         const drive = google.drive({ version: 'v3', auth });
@@ -71,31 +53,42 @@ async function checkFolder(folderName) {
     }
 }
 
-async function listAllFolders() {
+// Function to read document content
+async function readGoogleDocs(documentId) {
     try {
-        const drive = google.drive({ version: 'v3', auth });
-        const response = await drive.files.list({
-            'q': `mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-            fields: 'files(id, name)',
-        });
-        const folders = response.data.files;
-        if (folders.length > 0) {
-            console.log('Folders in your Google Drive:');
-            folders.forEach(folder => {
-                console.log(`- ${folder.name} (ID: ${folder.id})`);
-            });
-        } else {
-            console.log('No folders found.');
-        }
+        const docs = google.docs({ version: 'v1', auth });
+        const response = await docs.documents.get({ documentId });
+        return response.data;
     } catch (error) {
-        console.error('Error fetching folders:', error);
+        console.error('Error fetching document content:', error);
     }
 }
 
+// Function to get document metadata
+async function getDocumentMetadata(documentId) {
+    try {
+        const drive = google.drive({ version: 'v3', auth });
+        const file = await drive.files.get({
+            fileId: documentId,
+            fields: 'name, modifiedTime'
+        });
+        return file.data;
+    } catch (error) {
+        console.error('Error fetching document metadata:', error);
+    }
+}
+
+// Function to extract text from Google Docs data
+function extractTextFromDoc(docData) {
+    return docData.body.content
+        .filter(d => d.paragraph?.elements[0]?.textRun)
+        .map(d => d.paragraph.elements.map(el => el.textRun.content).join(''))
+        .join('\n');
+}
 
 // Self-invoking async function to execute read, write, and file listing operations
 (async () => {
-    const folderName = 'AS Level';
+    const folderName = 'Snaprove Testing';
 
     // Check if the folder exists and get the folder ID
     const folderId = await checkFolder(folderName);
