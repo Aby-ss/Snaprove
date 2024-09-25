@@ -24,7 +24,7 @@ async function getFilesList(folderId) {
         const drive = google.drive({ version: 'v3', auth });
         const response = await drive.files.list({
             'q': `'${folderId}' in parents and trashed = false`,
-            fields: 'files(id, name, modifiedTime)'
+            fields: 'files(id, name, mimeType, modifiedTime)'
         });
         return response.data.files;
     } catch (error) {
@@ -97,9 +97,9 @@ function extractTextFromDoc(docData) {
         // Get the list of files in the folder
         const filesList = await getFilesList(folderId);
         
-        // Display the file names and last modified times in a box
+        // Display the file names, MIME types, and last modified times in a box
         const fileDetails = filesList.map(file => 
-            centerText(`File: ${file.name} (Last Modified: ${new Date(file.modifiedTime).toLocaleString()})`, 75)
+            centerText(`File: ${file.name} (MIME Type: ${file.mimeType}, Last Modified: ${new Date(file.modifiedTime).toLocaleString()})`, 75)
         ).join('\n');
 
         const output = `
